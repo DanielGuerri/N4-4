@@ -69,52 +69,46 @@ La arquitectura inicial del proyecto será definida durante el desarrollo.
 
 ## 🛠️ Tecnologías
 
-Las tecnologías utilizadas se definirán durante el desarrollo del prototipo.
+Para este mini proyecto se optó por mantener la parte técnica lo más simple posible, ya que el foco es practicar la dinámica de trabajo en equipo y no la complejidad del código:
 
-Entre las tecnologías que pueden utilizarse se encuentran:
+* HTML / CSS / JavaScript plano (sin frameworks ni build tools)
+* Git / GitHub para control de versiones y trabajo colaborativo
+* Contenido generado con asistencia de IA a partir de las decisiones del equipo
 
-* Python
-* JavaScript / TypeScript
-* HTML / CSS
-* APIs y datos abiertos de NASA
-* Herramientas de análisis geoespacial
-* Git / GitHub
+Si el proyecto lo requiere más adelante, se podrán sumar herramientas de análisis geoespacial o datos abiertos de NASA.
 
 ---
 
 ## 📁 Estructura del repositorio
 
+Esta es la estructura real y actual del repositorio (se irá actualizando a medida que se agreguen archivos):
+
 ```text
 PastureRestore/
 │
-├── README.md
-├── src/
-├── data/
-├── scripts/
-├── docs/
-├── tests/
-└── .gitignore
+├── README.md          → este archivo
+└── index.html         → pantalla principal de la app (mobile-first)
 ```
 
-La estructura podrá modificarse a medida que avance el proyecto.
+A medida que el equipo sume pantallas nuevas, se van a ir agregando como archivos `.html` adicionales (o carpetas, si hace falta ordenar más) siguiendo el mismo estilo visual definido en `index.html`.
 
 ---
 
-## ▶️ Instalación
+## 🔄 Flujo de trabajo con Git
 
-Clonar el repositorio:
+Para practicar el trabajo colaborativo, el equipo sigue siempre el mismo circuito para subir cualquier cambio:
 
-```bash
-git clone https://github.com/USUARIO/PastureRestore.git
-```
+1. **Actualizar `main`** antes de empezar: `git pull origin main` (o "Pull" desde VS Code), para no perder cambios de otros compañeros.
+2. **Crear una rama propia** para el cambio que se va a hacer, por ejemplo `feature/pantalla-mapa`. Nunca se trabaja directo sobre `main`.
+3. **Hacer los cambios** (agregar o editar archivos).
+4. **Commit**: guardar los cambios con un mensaje corto que explique qué se hizo (ej: `"Agregar pantalla de mapa"`).
+5. **Push**: subir la rama a GitHub.
+6. **Abrir un Pull Request** desde GitHub, describiendo brevemente el cambio.
+7. **Esperar revisión** de otro integrante del equipo antes de aprobar (o revisarlo uno mismo si el equipo decide que alcanza con eso para este mini proyecto).
+8. **Merge** del Pull Request a `main`, y borrar la rama una vez mezclada.
+9. **Actualizar la copia local**: volver a `main` y hacer `git pull` para tener el último estado del proyecto.
 
-Ingresar al proyecto:
-
-```bash
-cd PastureRestore
-```
-
-Las instrucciones específicas de instalación y ejecución se agregarán cuando se establezca la tecnología definitiva.
+Este es el mismo circuito para cualquier cambio, sea una pantalla nueva, una corrección, o un ajuste de estilos.
 
 ---
 
