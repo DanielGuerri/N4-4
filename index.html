@@ -7,6 +7,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- Leaflet + OpenStreetMap: alternativa open source a Google Maps, sin API key -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-draw@1.0.4/dist/leaflet.draw.min.css">
 <style>
   :root{
     --bg-outer:#dfe4d5;
@@ -295,6 +298,7 @@
     opacity:0;
     pointer-events:none;
     transition:opacity 0.2s ease;
+    z-index:30;
   }
 
   .overlay.open{opacity:1;pointer-events:auto;}
@@ -361,6 +365,179 @@
   }
 
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* Pantalla de mapa (dibujar zona nueva) */
+  .map-screen{
+    position:absolute;
+    inset:0;
+    background:var(--bg);
+    display:flex;
+    flex-direction:column;
+    transform:translateX(100%);
+    transition:transform 0.25s ease;
+    z-index:20;
+  }
+
+  .map-screen.open{transform:translateX(0);}
+
+  .map-topbar{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 16px;
+    background:var(--surface);
+    border-bottom:1px solid var(--line);
+    flex-shrink:0;
+  }
+
+  .map-back{
+    border:none;
+    background:none;
+    padding:6px;
+    margin:-6px;
+    display:flex;
+    cursor:pointer;
+    color:var(--primary-deep);
+    border-radius:50%;
+  }
+
+  .map-back svg{width:20px;height:20px;stroke:var(--primary-deep);fill:none;stroke-width:1.8;}
+  .map-back:focus-visible{outline:2px solid var(--primary);outline-offset:1px;}
+
+  .map-title{
+    font-family:'Fraunces', serif;
+    font-size:17px;
+    font-weight:500;
+    color:var(--primary-deep);
+  }
+
+  .map-canvas-wrap{
+    flex:1;
+    position:relative;
+    background:#cfd8c2;
+  }
+
+  #mapCanvas{
+    position:absolute;
+    inset:0;
+  }
+
+  .map-canvas-wrap.loading::after{
+    content:'Cargando mapa…';
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    font-size:13px;
+    color:var(--ink-soft);
+  }
+
+  .map-canvas-wrap.error::after{
+    content:'No se pudo cargar el mapa. Revisá la consola (F12) para más detalle.';
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    width:80%;
+    text-align:center;
+    font-size:13px;
+    color:var(--critical);
+  }
+
+  .map-hint{
+    position:absolute;
+    top:12px;
+    left:50%;
+    transform:translateX(-50%);
+    max-width:calc(100% - 32px);
+    background:var(--primary-deep);
+    color:#fff;
+    font-size:12px;
+    line-height:1.4;
+    padding:8px 14px;
+    border-radius:14px;
+    text-align:center;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity 0.2s ease;
+    z-index:1100;
+  }
+
+  .map-hint.show{opacity:0.94;}
+
+  .map-fab{
+    position:absolute;
+    right:16px;
+    bottom:16px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    background:var(--primary);
+    color:#fff;
+    border:none;
+    border-radius:22px;
+    padding:11px 18px;
+    font-family:inherit;
+    font-size:13px;
+    font-weight:500;
+    cursor:pointer;
+    box-shadow:0 3px 10px rgba(11,24,15,0.25);
+    z-index:1100;
+  }
+
+  .map-fab.drawing{background:var(--critical);}
+  .map-fab:focus-visible{outline:2px solid var(--primary-deep);outline-offset:2px;}
+
+  .map-fab svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2;}
+
+  /* Hoja para nombrar la zona recién dibujada */
+  .sheet-field{
+    margin:4px 0 18px;
+  }
+
+  .sheet-field label{
+    display:block;
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+
+  .sheet-field input{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    font-family:inherit;
+    font-size:14px;
+    color:var(--ink);
+    background:var(--bg);
+  }
+
+  .sheet-field input:focus-visible{
+    outline:2px solid var(--primary);
+    outline-offset:1px;
+  }
+
+  .sheet-actions{
+    display:flex;
+    gap:10px;
+  }
+
+  .sheet-actions .sheet-close{
+    margin-top:0;
+    background:transparent;
+    color:var(--primary-deep);
+    border:1px solid var(--line);
+  }
+
+  .sheet-actions .sheet-save{
+    margin-top:0;
+  }
+
+  .sheet-save:disabled{
+    opacity:0.5;
+    cursor:not-allowed;
+  }
 
   @media (prefers-reduced-motion: reduce){
     *{transition:none !important;}
@@ -486,6 +663,40 @@
   </div>
 
   <div class="toast" id="toast"></div>
+
+  <!-- Pantalla de mapa: dibujar el polígono de una zona nueva -->
+  <div class="map-screen" id="mapScreen">
+    <div class="map-topbar">
+      <button class="map-back" id="mapBack" aria-label="Volver">
+        <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <span class="map-title">Nueva zona</span>
+    </div>
+    <div class="map-canvas-wrap loading" id="mapCanvasWrap">
+      <div id="mapCanvas"></div>
+      <div class="map-hint" id="mapHint">Tocá el mapa para marcar los vértices del lote. Tocá el primer punto de nuevo para cerrar el polígono.</div>
+      <button class="map-fab" id="mapFab">
+        <svg viewBox="0 0 24 24"><path d="M4 20 20 4M4 4h16v16"/></svg>
+        <span id="mapFabLabel">Dibujar polígono</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Hoja para ponerle nombre a la zona recién dibujada -->
+  <div class="overlay" id="zoneNameOverlay">
+    <div class="sheet">
+      <h3 class="sheet-title">Nombrá esta zona</h3>
+      <p class="sheet-sub" id="zoneNameHect">—</p>
+      <div class="sheet-field">
+        <label for="zoneNameInput">Nombre del lote</label>
+        <input type="text" id="zoneNameInput" placeholder="Ej: Potrero del Sauce" maxlength="40">
+      </div>
+      <div class="sheet-actions">
+        <button class="sheet-close" id="zoneNameDiscard">Descartar</button>
+        <button class="sheet-close sheet-save" id="zoneNameSave" disabled>Guardar zona</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -503,10 +714,14 @@
     toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
   }
 
-  // Navegación inferior: por ahora solo Inicio está construida
+  // Navegación inferior: Mapa ya está construida, el resto sigue en camino
   document.querySelectorAll('.navitem').forEach(btn => {
     btn.addEventListener('click', () => {
       if (btn.dataset.target === 'home') return;
+      if (btn.dataset.target === 'mapa') {
+        abrirPantallaMapa();
+        return;
+      }
       mostrarToast('Pantalla "' + btn.querySelector('span').textContent + '" en construcción');
     });
   });
@@ -555,6 +770,232 @@
     const horas = Math.floor(minutosDesdeSync / 60);
     ultimaSync.textContent = horas >= 1 ? 'Hace ' + horas + ' h' : 'Hace ' + minutosDesdeSync + ' min';
   }, 60000);
+
+  /* ============================================================
+     PANTALLA DE MAPA — dibujar el polígono de una zona nueva
+     ------------------------------------------------------------
+     Usa Leaflet + tiles de OpenStreetMap (open source, sin API
+     key) más el plugin Leaflet.draw para el dibujo de polígonos.
+     Es una alternativa liviana a Google Maps, pensada solo para
+     probar el flujo: la calidad de imagen satelital no es la
+     prioridad acá.
+     ============================================================ */
+
+  // Centro de referencia inicial (se puede ajustar a la zona real del campo)
+  const CENTRO_MAPA_DEFECTO = [-33.6805, -65.4515]; // Villa Mercedes, San Luis
+
+  let mapaListo = false;
+  let cargandoMapa = false;
+  let map, drawnItems, dibujoActivo;
+  let poligonoActual = null;
+  let dibujando = false;
+
+  const mapScreen = document.getElementById('mapScreen');
+  const mapCanvasWrap = document.getElementById('mapCanvasWrap');
+  const mapHint = document.getElementById('mapHint');
+  const mapFab = document.getElementById('mapFab');
+  const mapFabLabel = document.getElementById('mapFabLabel');
+  const mapBack = document.getElementById('mapBack');
+
+  const zoneNameOverlay = document.getElementById('zoneNameOverlay');
+  const zoneNameHect = document.getElementById('zoneNameHect');
+  const zoneNameInput = document.getElementById('zoneNameInput');
+  const zoneNameDiscard = document.getElementById('zoneNameDiscard');
+  const zoneNameSave = document.getElementById('zoneNameSave');
+
+  function abrirPantallaMapa() {
+    mapScreen.classList.add('open');
+    document.querySelectorAll('.navitem').forEach(b => b.classList.toggle('active', b.dataset.target === 'mapa'));
+
+    if (!mapaListo && !cargandoMapa) {
+      cargarLeaflet();
+    } else if (mapaListo) {
+      // El mapa ya existía: forzar un recálculo de tamaño porque estuvo
+      // oculto (Leaflet necesita esto para no mostrarse cortado).
+      setTimeout(() => map.invalidateSize(), 0);
+    }
+  }
+
+  function cerrarPantallaMapa() {
+    mapScreen.classList.remove('open');
+    document.querySelectorAll('.navitem').forEach(b => b.classList.toggle('active', b.dataset.target === 'home'));
+    detenerDibujo();
+    if (poligonoActual) {
+      drawnItems.removeLayer(poligonoActual);
+      poligonoActual = null;
+    }
+  }
+
+  mapBack.addEventListener('click', cerrarPantallaMapa);
+
+  function cargarScript(src) {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = src;
+      script.onload = resolve;
+      script.onerror = () => reject(new Error('No se pudo cargar ' + src));
+      document.head.appendChild(script);
+    });
+  }
+
+  function conTimeout(promesa, ms) {
+    return Promise.race([
+      promesa,
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
+    ]);
+  }
+
+  function cargarLeaflet() {
+    cargandoMapa = true;
+
+    const carga = cargarScript('https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js')
+      .then(() => cargarScript('https://cdn.jsdelivr.net/npm/leaflet-draw@1.0.4/dist/leaflet.draw.min.js'));
+
+    conTimeout(carga, 10000)
+      .then(inicializarMapa)
+      .catch((error) => {
+        cargandoMapa = false;
+        mapCanvasWrap.classList.remove('loading');
+        mapCanvasWrap.classList.add('error');
+        console.error('Fallo al cargar el mapa:', error);
+        mostrarToast('No se pudo cargar el mapa. Revisá la conexión o el bloqueador de contenido (ver consola).');
+      });
+  }
+
+  function inicializarMapa() {
+    mapaListo = true;
+    cargandoMapa = false;
+    mapCanvasWrap.classList.remove('loading');
+
+    map = L.map('mapCanvas', { zoomControl: true }).setView(CENTRO_MAPA_DEFECTO, 15);
+
+    // Se mueve a la izquierda para que no tape el botón de dibujar (abajo a la derecha).
+    map.attributionControl.setPosition('bottomleft');
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+
+    drawnItems = new L.FeatureGroup();
+    map.addLayer(drawnItems);
+
+    map.on(L.Draw.Event.CREATED, function (e) {
+      poligonoActual = e.layer;
+      drawnItems.addLayer(poligonoActual);
+      detenerDibujo();
+      abrirHojaDeNombre(poligonoActual);
+    });
+  }
+
+  mapFab.addEventListener('click', function () {
+    if (!mapaListo) return;
+
+    if (dibujando) {
+      detenerDibujo();
+      return;
+    }
+
+    if (poligonoActual) {
+      drawnItems.removeLayer(poligonoActual);
+      poligonoActual = null;
+    }
+
+    dibujando = true;
+    dibujoActivo = new L.Draw.Polygon(map, {
+      shapeOptions: { color: '#223629', fillColor: '#33513f', fillOpacity: 0.25, weight: 2 }
+    });
+    dibujoActivo.enable();
+    mapFab.classList.add('drawing');
+    mapFabLabel.textContent = 'Cancelar dibujo';
+    mapHint.classList.add('show');
+  });
+
+  function detenerDibujo() {
+    dibujando = false;
+    mapFab.classList.remove('drawing');
+    mapFabLabel.textContent = 'Dibujar polígono';
+    mapHint.classList.remove('show');
+    if (dibujoActivo) dibujoActivo.disable();
+  }
+
+  function calcularHectareas(poligono) {
+    const areaM2 = L.GeometryUtil.geodesicArea(poligono.getLatLngs()[0]);
+    return Math.round((areaM2 / 10000) * 10) / 10; // m² -> ha, 1 decimal
+  }
+
+  function abrirHojaDeNombre(poligono) {
+    const hectareas = calcularHectareas(poligono);
+    zoneNameHect.textContent = hectareas + ' ha aproximadas · trazadas en el mapa';
+    zoneNameInput.value = '';
+    zoneNameSave.disabled = true;
+    zoneNameOverlay.classList.add('open');
+    zoneNameOverlay.dataset.hectareas = hectareas;
+    setTimeout(() => zoneNameInput.focus(), 250);
+  }
+
+  zoneNameInput.addEventListener('input', () => {
+    zoneNameSave.disabled = zoneNameInput.value.trim().length === 0;
+  });
+
+  zoneNameDiscard.addEventListener('click', () => {
+    zoneNameOverlay.classList.remove('open');
+    if (poligonoActual) {
+      drawnItems.removeLayer(poligonoActual);
+      poligonoActual = null;
+    }
+  });
+
+  zoneNameSave.addEventListener('click', () => {
+    const nombre = zoneNameInput.value.trim();
+    if (!nombre || !poligonoActual) return;
+
+    const hectareas = zoneNameOverlay.dataset.hectareas;
+    agregarZonaALaLista(nombre, hectareas);
+
+    zoneNameOverlay.classList.remove('open');
+    poligonoActual = null; // el polígono queda dibujado en el mapa como referencia
+    cerrarPantallaMapa();
+    mostrarToast('Zona "' + nombre + '" agregada');
+  });
+
+  function agregarZonaALaLista(nombre, hectareas) {
+    const zoneList = document.getElementById('zoneList');
+
+    const zona = document.createElement('div');
+    zona.className = 'zone';
+    zona.tabIndex = 0;
+    zona.dataset.zona = nombre;
+    zona.dataset.hect = hectareas + ' ha · sin imágenes satelitales todavía';
+    zona.dataset.indice = '—';
+    zona.dataset.estado = 'Sin datos';
+
+    zona.innerHTML =
+      '<div class="zone-info">' +
+        '<div class="zone-name"></div>' +
+        '<div class="zone-sub">' + hectareas + ' ha</div>' +
+      '</div>' +
+      '<div class="zone-right">' +
+        '<span class="zone-index">—</span>' +
+        '<span class="badge warn"></span>' +
+      '</div>';
+    zona.querySelector('.zone-name').textContent = nombre;
+
+    zona.addEventListener('click', () => abrirZona(zona));
+    zona.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        abrirZona(zona);
+      }
+    });
+
+    zoneList.appendChild(zona);
+
+    const contadorZonas = document.querySelector('.stats .stat:first-child .stat-value');
+    if (contadorZonas) {
+      contadorZonas.textContent = String(Number(contadorZonas.textContent || '0') + 1);
+    }
+  }
 </script>
 
 </body>
