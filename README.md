@@ -1,157 +1,134 @@
-# 🌱 PastureRestore
+# PastureRestore V2
 
-Mini proyecto desarrollado por el equipo como parte de la preparación para el **NASA Space Apps Challenge 2026**.
+Mini proyecto NASA Space Apps 2026.
 
-## 📌 Descripción
+## Qué hace esta versión
 
-**PastureRestore** es una aplicación experimental orientada al análisis y monitoreo de la recuperación de pasturas degradadas.
+- El usuario dibuja un polígono sobre el mapa.
+- El frontend envía el polígono GeoJSON a una API propia.
+- La API autentica contra Copernicus Data Space.
+- La API consulta Sentinel-2 L2A mediante Statistical API.
+- Se calcula NDVI real con B04 (rojo) y B08 (infrarrojo cercano).
+- Se toma el último resultado diario válido dentro de los últimos 30 días.
+- El resultado se muestra en el menú principal y en la zona.
 
-El objetivo del mini proyecto es que el equipo pueda llevar una idea desde el concepto hasta una **aplicación funcional**, utilizando datos y tecnologías relacionadas con la observación de la Tierra.
+El porcentaje mostrado es una representación visual del NDVI normalizado entre 0 y 1 para esta demo; no debe interpretarse como porcentaje científico de cobertura o salud del pastizal.
 
-Este proyecto forma parte de la etapa de preparación del equipo y **no constituye la entrega oficial del NASA Space Apps Challenge 2026**.
-
----
-
-## 🎯 Objetivo del mini proyecto
-
-El objetivo principal es desarrollar un prototipo funcional que permita al equipo practicar:
-
-* 🛰️ Uso de datos de observación de la Tierra.
-* 🌱 Análisis de condiciones de pasturas.
-* 📊 Procesamiento y visualización de datos.
-* 💻 Desarrollo de una aplicación.
-* 🤝 Trabajo colaborativo mediante GitHub.
-* 🔄 Organización y control de versiones del código.
-
----
-
-## 🚀 La aplicación
-
-PastureRestore busca representar, de manera sencilla, cómo los datos obtenidos mediante observación satelital pueden utilizarse para analizar la evolución de una zona de pastura.
-
-El prototipo podrá incorporar:
-
-* 🗺️ Visualización geográfica.
-* 🌿 Indicadores de vegetación.
-* 📈 Evolución temporal.
-* 🛰️ Datos provenientes de fuentes abiertas.
-* 🔎 Comparación de diferentes períodos.
-* 🌱 Seguimiento de la recuperación.
-
-Las funcionalidades se irán incorporando durante el desarrollo del mini proyecto.
-
----
-
-## 🧩 Arquitectura
-
-La arquitectura inicial del proyecto será definida durante el desarrollo.
+## Estructura
 
 ```text
-       🛰️ Datos satelitales
-              │
-              ▼
-       📥 Obtención de datos
-              │
-              ▼
-       ⚙️ Procesamiento
-              │
-              ▼
-       📊 Indicadores
-              │
-              ▼
-       🗺️ Visualización
-              │
-              ▼
-        🌱 PastureRestore
+pasturerestore-v2/
+├── index.html
+├── README.md
+└── api/
+    ├── main.py
+    ├── requirements.txt
+    ├── .env.example
+    └── .gitignore
 ```
 
----
+## Desarrollo local
 
-## 🛠️ Tecnologías
+### 1. Frontend
 
-Para este mini proyecto se optó por mantener la parte técnica lo más simple posible, ya que el foco es practicar la dinámica de trabajo en equipo y no la complejidad del código:
+Abrir `index.html` con Live Server en VS Code.
 
-* HTML / CSS / JavaScript plano (sin frameworks ni build tools)
-* Git / GitHub para control de versiones y trabajo colaborativo
-* Contenido generado con asistencia de IA a partir de las decisiones del equipo
+Por defecto la app busca la API en:
 
-Si el proyecto lo requiere más adelante, se podrán sumar herramientas de análisis geoespacial o datos abiertos de NASA.
+`http://127.0.0.1:8000`
 
----
+Si cambiás la API, modificar `API_BASE_URL` al comienzo del JavaScript de `index.html`.
 
-## 📁 Estructura del repositorio
+### 2. API
 
-Esta es la estructura real y actual del repositorio (se irá actualizando a medida que se agreguen archivos):
+En VS Code:
+
+```powershell
+cd api
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+Copiar `.env.example` a `.env` y completar las credenciales de Copernicus.
+
+Luego:
+
+```powershell
+$env:COPERNICUS_CLIENT_ID="TU_CLIENT_ID"
+$env:COPERNICUS_CLIENT_SECRET="TU_CLIENT_SECRET"
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
+Prueba:
+
+`http://127.0.0.1:8000/api/health`
+
+## Credenciales
+
+No subir nunca `CLIENT_SECRET` a GitHub.
+
+Crear un OAuth Client en Copernicus Data Space y guardar el secreto como variable de entorno del servidor.
+
+## Despliegue
+
+Frontend: GitHub Pages.
+
+API: Render como Web Service.
+
+### Render
+
+Root Directory:
+
+`api`
+
+Build Command:
 
 ```text
-PastureRestore/
-│
-├── README.md          → este archivo
-└── index.html         → pantalla principal de la app (mobile-first)
+pip install -r requirements.txt
 ```
 
-A medida que el equipo sume pantallas nuevas, se van a ir agregando como archivos `.html` adicionales (o carpetas, si hace falta ordenar más) siguiendo el mismo estilo visual definido en `index.html`.
+Start Command:
 
----
+```text
+uvicorn main:app --host 0.0.0.0 --port $PORT
+```
 
-## 🔄 Flujo de trabajo con Git
+Variables:
 
-Para practicar el trabajo colaborativo, el equipo sigue siempre el mismo circuito para subir cualquier cambio:
+```text
+COPERNICUS_CLIENT_ID=...
+COPERNICUS_CLIENT_SECRET=...
+ALLOWED_ORIGINS=https://TU_USUARIO.github.io
+```
 
-1. **Actualizar `main`** antes de empezar: `git pull origin main` (o "Pull" desde VS Code), para no perder cambios de otros compañeros.
-2. **Crear una rama propia** para el cambio que se va a hacer, por ejemplo `feature/pantalla-mapa`. Nunca se trabaja directo sobre `main`.
-3. **Hacer los cambios** (agregar o editar archivos).
-4. **Commit**: guardar los cambios con un mensaje corto que explique qué se hizo (ej: `"Agregar pantalla de mapa"`).
-5. **Push**: subir la rama a GitHub.
-6. **Abrir un Pull Request** desde GitHub, describiendo brevemente el cambio.
-7. **Esperar revisión** de otro integrante del equipo antes de aprobar (o revisarlo uno mismo si el equipo decide que alcanza con eso para este mini proyecto).
-8. **Merge** del Pull Request a `main`, y borrar la rama una vez mezclada.
-9. **Actualizar la copia local**: volver a `main` y hacer `git pull` para tener el último estado del proyecto.
+Después de obtener la URL de Render, por ejemplo:
 
-Este es el mismo circuito para cualquier cambio, sea una pantalla nueva, una corrección, o un ajuste de estilos.
+`https://pasturerestore-api.onrender.com`
 
----
+cambiar en `index.html`:
 
-## 👥 Equipo
+```javascript
+const API_BASE_URL = 'https://pasturerestore-api.onrender.com';
+```
 
-Proyecto desarrollado por el equipo de preparación para **NASA Space Apps Challenge 2026**.
+y volver a subir el cambio a GitHub.
 
-* Daniel
-* Emmanuel
-* Marcelo
-* Hernán
-* Leandro
-* Alfredo
+## Flujo GitHub del equipo
 
----
+Seguir el circuito acordado:
 
-## 📅 Estado del proyecto
+1. `git pull origin main`
+2. Crear rama, por ejemplo `feature/sentinel-ndvi`
+3. Hacer cambios
+4. Commit
+5. Push
+6. Pull Request
+7. Revisión
+8. Merge a `main`
+9. Borrar la rama
+10. Volver a `main` y hacer `git pull`
 
-**🟡 En desarrollo**
+## Fuente de datos
 
-Este repositorio se utilizará para:
-
-* Centralizar el código.
-* Registrar avances.
-* Trabajar de manera colaborativa.
-* Practicar Git y GitHub.
-* Documentar decisiones técnicas.
-* Construir y probar el prototipo.
-
----
-
-## 🎓 Propósito
-
-PastureRestore es principalmente un **proyecto de aprendizaje y experimentación**.
-
-La finalidad es que el equipo pueda experimentar el ciclo completo:
-
-**Idea → Diseño → Desarrollo → Prueba → Mejora**
-
-y utilizar lo aprendido como experiencia para el proyecto que posteriormente se desarrolle para el **NASA Space Apps Challenge 2026**.
-
----
-
-## 🌱 PastureRestore
-
-**Un pequeño proyecto para aprender haciendo.**
+Copernicus Data Space / Sentinel-2 L2A / Sentinel Hub Statistical API.

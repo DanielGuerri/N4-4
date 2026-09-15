@@ -208,6 +208,27 @@
     gap:10px;
   }
 
+  .zone-delete{
+    border:1px solid var(--line);
+    background:transparent;
+    color:var(--ink-soft);
+    border-radius:5px;
+    padding:5px 7px;
+    font-family:inherit;
+    font-size:11px;
+    cursor:pointer;
+  }
+
+  .zone-delete:hover{
+    color:var(--critical);
+    border-color:var(--critical);
+  }
+
+  .zone-delete:focus-visible{
+    outline:2px solid var(--primary);
+    outline-offset:1px;
+  }
+
   .zone-index{
     font-size:14px;
     font-weight:600;
@@ -539,6 +560,16 @@
     cursor:not-allowed;
   }
 
+
+  .satellite-status{
+    margin-top:8px;
+    font-size:11px;
+    color:var(--ink-soft);
+  }
+  .satellite-loading{
+    opacity:0.75;
+  }
+
   @media (prefers-reduced-motion: reduce){
     *{transition:none !important;}
   }
@@ -556,29 +587,29 @@
 
   <main>
     <section class="hero">
-      <p class="hero-label">Índice de recuperación promedio</p>
-      <div class="hero-number">64<span class="unit">%</span></div>
-      <p class="hero-delta">+4 puntos desde el mes pasado</p>
+      <p class="hero-label">Índice de vegetación promedio</p>
+      <div class="hero-number"><span id="heroIndice">—</span><span class="unit">%</span></div>
+      <p class="hero-delta" id="heroFuente">Esperando datos Sentinel-2</p>
     </section>
 
     <section class="stats">
       <div class="stat">
-        <div class="stat-value">6</div>
+        <div class="stat-value" id="contadorZonas">4</div>
         <div class="stat-label">Zonas monitoreadas</div>
       </div>
       <div class="stat">
-        <div class="stat-value" id="ultimaSync">Hace 2 h</div>
+        <div class="stat-value" id="ultimaSync">—</div>
         <div class="stat-label">Última sincronización</div>
       </div>
       <div class="stat">
-        <div class="stat-value">1</div>
+        <div class="stat-value" id="contadorAlertas">—</div>
         <div class="stat-label">Alerta activa</div>
       </div>
     </section>
 
     <h2 class="section-title">Zonas monitoreadas</h2>
     <div class="zone-list" id="zoneList">
-      <div class="zone" tabindex="0" data-zona="Sector Norte" data-hect="18 ha · Últ. imagen hace 3 días" data-indice="71%" data-estado="En recuperación">
+      <div class="zone" tabindex="0" data-zona="Sector Norte" data-hect="18 ha · Últ. imagen hace 3 días" data-indice="71%" data-estado="En recuperación" data-fuente="Demo" data-fecha="—" data-ndvi="">
         <div class="zone-info">
           <div class="zone-name">Sector Norte</div>
           <div class="zone-sub">18 ha</div>
@@ -586,10 +617,11 @@
         <div class="zone-right">
           <span class="zone-index">71%</span>
           <span class="badge good"></span>
+          <button class="zone-delete" type="button" aria-label="Eliminar zona">🗑️</button>
         </div>
       </div>
 
-      <div class="zone" tabindex="0" data-zona="Sector Bajo" data-hect="24 ha · Últ. imagen hace 3 días" data-indice="58%" data-estado="Estable">
+      <div class="zone" tabindex="0" data-zona="Sector Bajo" data-hect="24 ha · Últ. imagen hace 3 días" data-indice="58%" data-estado="Estable" data-fuente="Demo" data-fecha="—" data-ndvi="">
         <div class="zone-info">
           <div class="zone-name">Sector Bajo</div>
           <div class="zone-sub">24 ha</div>
@@ -597,10 +629,11 @@
         <div class="zone-right">
           <span class="zone-index">58%</span>
           <span class="badge warn"></span>
+          <button class="zone-delete" type="button" aria-label="Eliminar zona">🗑️</button>
         </div>
       </div>
 
-      <div class="zone" tabindex="0" data-zona="Loma del Molino" data-hect="12 ha · Últ. imagen hace 5 días" data-indice="39%" data-estado="Requiere atención">
+      <div class="zone" tabindex="0" data-zona="Loma del Molino" data-hect="12 ha · Últ. imagen hace 5 días" data-indice="39%" data-estado="Requiere atención" data-fuente="Demo" data-fecha="—" data-ndvi="">
         <div class="zone-info">
           <div class="zone-name">Loma del Molino</div>
           <div class="zone-sub">12 ha</div>
@@ -608,10 +641,11 @@
         <div class="zone-right">
           <span class="zone-index">39%</span>
           <span class="badge critical"></span>
+          <button class="zone-delete" type="button" aria-label="Eliminar zona">🗑️</button>
         </div>
       </div>
 
-      <div class="zone" tabindex="0" data-zona="Sector Este" data-hect="30 ha · Últ. imagen hace 2 días" data-indice="76%" data-estado="En recuperación">
+      <div class="zone" tabindex="0" data-zona="Sector Este" data-hect="30 ha · Últ. imagen hace 2 días" data-indice="76%" data-estado="En recuperación" data-fuente="Demo" data-fecha="—" data-ndvi="">
         <div class="zone-info">
           <div class="zone-name">Sector Este</div>
           <div class="zone-sub">30 ha</div>
@@ -619,6 +653,7 @@
         <div class="zone-right">
           <span class="zone-index">76%</span>
           <span class="badge good"></span>
+          <button class="zone-delete" type="button" aria-label="Eliminar zona">🗑️</button>
         </div>
       </div>
     </div>
@@ -658,6 +693,8 @@
       <p class="sheet-sub" id="sheetSub">Detalle</p>
       <div class="sheet-row"><span>Índice de vegetación</span><span id="sheetIndice">—</span></div>
       <div class="sheet-row"><span>Estado</span><span id="sheetEstado">—</span></div>
+      <div class="sheet-row"><span>Fuente</span><span id="sheetFuente">—</span></div>
+      <div class="sheet-row"><span>Última imagen</span><span id="sheetFecha">—</span></div>
       <button class="sheet-close" id="sheetClose">Cerrar</button>
     </div>
   </div>
@@ -699,22 +736,209 @@
   </div>
 </div>
 
-<script>
-  // Fecha de hoy en el header
-  const fechaHoy = document.getElementById('fechaHoy');
-  fechaHoy.textContent = new Date().toLocaleDateString('es-AR', { day: 'numeric', month: 'short' });
 
-  // Toast simple para pantallas que todavía no están construidas
+<script>
+  // ============================================================
+  // PastureRestore V2 - configuración de API
+  // ============================================================
+  // En desarrollo local: http://127.0.0.1:8000
+  // En producción: colocar aquí la URL pública de Render.
+  const API_BASE_URL = 'http://127.0.0.1:8000';
+</script>
+
+<script>
+  // ============================================================
+  // PastureRestore V2
+  // Frontend: Leaflet + OpenStreetMap
+  // Datos: API propia -> Copernicus Sentinel-2 Statistical API
+  // ============================================================
+
+  const fechaHoy = document.getElementById('fechaHoy');
+  fechaHoy.textContent = new Date().toLocaleDateString('es-AR', {
+    day: 'numeric', month: 'short'
+  });
+
   const toast = document.getElementById('toast');
   let toastTimer = null;
+
   function mostrarToast(texto) {
     toast.textContent = texto;
     toast.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
   }
 
-  // Navegación inferior: Mapa ya está construida, el resto sigue en camino
+  const heroIndice = document.getElementById('heroIndice');
+  const heroFuente = document.getElementById('heroFuente');
+  const ultimaSync = document.getElementById('ultimaSync');
+  const contadorZonas = document.getElementById('contadorZonas');
+  const contadorAlertas = document.getElementById('contadorAlertas');
+
+  function clasificarNDVI(ndvi) {
+    if (ndvi === null || Number.isNaN(ndvi)) return { estado: 'Sin datos', clase: 'warn' };
+    if (ndvi >= 0.60) return { estado: 'Vegetación alta', clase: 'good' };
+    if (ndvi >= 0.35) return { estado: 'Vegetación moderada', clase: 'warn' };
+    return { estado: 'Vegetación baja', clase: 'critical' };
+  }
+
+  function ndviAPorcentaje(ndvi) {
+    if (ndvi === null || Number.isNaN(ndvi)) return null;
+    return Math.round(Math.max(0, Math.min(1, ndvi)) * 100);
+  }
+
+  function recalcularIndicadorGlobal() {
+    const zonas = [...document.querySelectorAll('#zoneList .zone')];
+    const valores = zonas
+      .map(zona => Number.parseFloat(zona.dataset.ndvi))
+      .filter(valor => Number.isFinite(valor));
+
+    if (!valores.length) {
+      actualizarHero(null, null, 0);
+      actualizarSync(null);
+      return;
+    }
+
+    const promedio = valores.reduce((total, valor) => total + valor, 0) / valores.length;
+    const fechas = zonas
+      .map(zona => zona.dataset.fecha)
+      .filter(Boolean)
+      .map(fecha => new Date(fecha))
+      .filter(fecha => !Number.isNaN(fecha.getTime()));
+    const ultimaFecha = fechas.length
+      ? new Date(Math.max(...fechas.map(fecha => fecha.getTime())))
+      : null;
+
+    actualizarHero(promedio, ultimaFecha ? ultimaFecha.toISOString() : null, valores.length);
+    actualizarSync(ultimaFecha ? ultimaFecha.toISOString() : null);
+  }
+
+  function actualizarHero(ndvi, fecha, cantidadZonas = 0) {
+    const porcentaje = ndviAPorcentaje(ndvi);
+    heroIndice.textContent = porcentaje === null ? '—' : porcentaje;
+    heroFuente.textContent = porcentaje === null
+      ? 'Sin datos Sentinel-2 disponibles'
+      : `Promedio de ${cantidadZonas} ${cantidadZonas === 1 ? 'zona' : 'zonas'} · Sentinel-2${fecha ? ` · ${formatearFecha(fecha)}` : ''}`;
+  }
+
+  function formatearFecha(fecha) {
+    if (!fecha) return '—';
+    const d = new Date(fecha);
+    if (Number.isNaN(d.getTime())) return fecha;
+    return d.toLocaleDateString('es-AR', {
+      day: '2-digit', month: '2-digit', year: 'numeric'
+    });
+  }
+
+  function actualizarSync(fecha) {
+    if (!fecha) {
+      ultimaSync.textContent = '—';
+      return;
+    }
+    const d = new Date(fecha);
+    const ahora = new Date();
+    const minutos = Math.max(0, Math.round((ahora - d) / 60000));
+    if (minutos < 60) ultimaSync.textContent = `Hace ${minutos} min`;
+    else ultimaSync.textContent = `Hace ${Math.floor(minutos / 60)} h`;
+  }
+
+  function actualizarDetalleDesdeDatos(zonaEl, datos) {
+    const porcentaje = ndviAPorcentaje(datos.ndvi);
+    const clasificacion = clasificarNDVI(datos.ndvi);
+
+    zonaEl.dataset.indice = porcentaje === null ? '—' : `${porcentaje}%`;
+    zonaEl.dataset.estado = clasificacion.estado;
+    zonaEl.dataset.fuente = datos.source || 'Sentinel-2';
+    zonaEl.dataset.fecha = datos.date || '';
+    zonaEl.dataset.ndvi = Number.isFinite(Number(datos.ndvi)) ? String(datos.ndvi) : '';
+
+    const index = zonaEl.querySelector('.zone-index');
+    const badge = zonaEl.querySelector('.badge');
+    const sub = zonaEl.querySelector('.zone-sub');
+
+    if (index) index.textContent = porcentaje === null ? '—' : `${porcentaje}%`;
+    if (badge) {
+      badge.className = `badge ${clasificacion.clase}`;
+    }
+    if (sub && datos.date) {
+      const hect = zonaEl.dataset.hect.split(' · ')[0];
+      sub.textContent = `${hect}`;
+    }
+  }
+
+  async function consultarNDVI(geometry) {
+    const response = await fetch(`${API_BASE_URL}/api/ndvi`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        geometry,
+        days: 30,
+        max_cloud_coverage: 30
+      })
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(data.detail || `Error HTTP ${response.status}`);
+    }
+
+    return data;
+  }
+
+  async function actualizarZonaConSentinel(zonaEl, geometry) {
+    const index = zonaEl.querySelector('.zone-index');
+    const original = index ? index.textContent : '—';
+
+    if (index) index.textContent = '…';
+    zonaEl.classList.add('satellite-loading');
+
+    try {
+      const datos = await consultarNDVI(geometry);
+      actualizarDetalleDesdeDatos(zonaEl, datos);
+
+      // El indicador principal representa el promedio de todas las zonas con NDVI válido.
+      recalcularIndicadorGlobal();
+
+      return datos;
+    } catch (error) {
+      console.error('Error consultando Sentinel-2:', error);
+      if (index) index.textContent = original;
+      mostrarToast('No se pudo consultar Sentinel-2');
+      throw error;
+    } finally {
+      zonaEl.classList.remove('satellite-loading');
+    }
+  }
+
+  function geometryDesdePoligono(poligono) {
+    const latLngs = poligono.getLatLngs()[0];
+    const coordinates = latLngs.map(p => [p.lng, p.lat]);
+
+    // GeoJSON exige cerrar el anillo repitiendo el primer punto.
+    if (coordinates.length && (
+      coordinates[0][0] !== coordinates[coordinates.length - 1][0] ||
+      coordinates[0][1] !== coordinates[coordinates.length - 1][1]
+    )) {
+      coordinates.push(coordinates[0]);
+    }
+
+    return {
+      type: 'Polygon',
+      coordinates: [coordinates]
+    };
+  }
+
+  function abrirZona(zonaEl) {
+    sheetTitle.textContent = zonaEl.dataset.zona;
+    sheetSub.textContent = zonaEl.dataset.hect;
+    sheetIndice.textContent = zonaEl.dataset.indice || '—';
+    sheetEstado.textContent = zonaEl.dataset.estado || '—';
+    sheetFuente.textContent = zonaEl.dataset.fuente || '—';
+    sheetFecha.textContent = formatearFecha(zonaEl.dataset.fecha);
+    overlay.classList.add('open');
+  }
+
+  // Navegación inferior
   document.querySelectorAll('.navitem').forEach(btn => {
     btn.addEventListener('click', () => {
       if (btn.dataset.target === 'home') return;
@@ -730,59 +954,67 @@
     mostrarToast('Pantalla "Comparar" en construcción');
   });
 
-  // Overlay de detalle de zona
+  // Overlay de detalle
   const overlay = document.getElementById('zoneOverlay');
   const sheetTitle = document.getElementById('sheetTitle');
   const sheetSub = document.getElementById('sheetSub');
   const sheetIndice = document.getElementById('sheetIndice');
   const sheetEstado = document.getElementById('sheetEstado');
+  const sheetFuente = document.getElementById('sheetFuente');
+  const sheetFecha = document.getElementById('sheetFecha');
 
-  function abrirZona(zonaEl) {
-    sheetTitle.textContent = zonaEl.dataset.zona;
-    sheetSub.textContent = zonaEl.dataset.hect;
-    sheetIndice.textContent = zonaEl.dataset.indice;
-    sheetEstado.textContent = zonaEl.dataset.estado;
-    overlay.classList.add('open');
+  function eliminarZona(zonaEl) {
+    const nombre = zonaEl.dataset.zona || 'esta zona';
+    if (!confirm(`¿Querés eliminar "${nombre}" de PastureRestore?`)) return;
+
+    zonaEl.remove();
+
+    if (contadorZonas) {
+      contadorZonas.textContent = String(
+        document.querySelectorAll('#zoneList .zone').length
+      );
+    }
+
+    recalcularIndicadorGlobal();
+    mostrarToast(`Zona "${nombre}" eliminada`);
   }
 
-  document.querySelectorAll('.zone').forEach(zonaEl => {
-    zonaEl.addEventListener('click', () => abrirZona(zonaEl));
+  function configurarZona(zonaEl) {
+    zonaEl.addEventListener('click', e => {
+      if (e.target.closest('.zone-delete')) return;
+      abrirZona(zonaEl);
+    });
     zonaEl.addEventListener('keydown', e => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         abrirZona(zonaEl);
       }
     });
-  });
+
+    const deleteButton = zonaEl.querySelector('.zone-delete');
+    if (deleteButton) {
+      deleteButton.addEventListener('click', e => {
+        e.stopPropagation();
+        eliminarZona(zonaEl);
+      });
+    }
+  }
+
+  document.querySelectorAll('.zone').forEach(configurarZona);
 
   document.getElementById('sheetClose').addEventListener('click', () => {
     overlay.classList.remove('open');
   });
+
   overlay.addEventListener('click', e => {
     if (e.target === overlay) overlay.classList.remove('open');
   });
 
-  // Simula la actualización de "última sincronización" (acá después va la llamada real)
-  const ultimaSync = document.getElementById('ultimaSync');
-  let minutosDesdeSync = 120;
-  setInterval(() => {
-    minutosDesdeSync++;
-    const horas = Math.floor(minutosDesdeSync / 60);
-    ultimaSync.textContent = horas >= 1 ? 'Hace ' + horas + ' h' : 'Hace ' + minutosDesdeSync + ' min';
-  }, 60000);
-
   /* ============================================================
-     PANTALLA DE MAPA — dibujar el polígono de una zona nueva
-     ------------------------------------------------------------
-     Usa Leaflet + tiles de OpenStreetMap (open source, sin API
-     key) más el plugin Leaflet.draw para el dibujo de polígonos.
-     Es una alternativa liviana a Google Maps, pensada solo para
-     probar el flujo: la calidad de imagen satelital no es la
-     prioridad acá.
+     MAPA
      ============================================================ */
 
-  // Centro de referencia inicial (se puede ajustar a la zona real del campo)
-  const CENTRO_MAPA_DEFECTO = [-33.6805, -65.4515]; // Villa Mercedes, San Luis
+  const CENTRO_MAPA_DEFECTO = [-33.6805, -65.4515];
 
   let mapaListo = false;
   let cargandoMapa = false;
@@ -805,20 +1037,19 @@
 
   function abrirPantallaMapa() {
     mapScreen.classList.add('open');
-    document.querySelectorAll('.navitem').forEach(b => b.classList.toggle('active', b.dataset.target === 'mapa'));
+    document.querySelectorAll('.navitem').forEach(b =>
+      b.classList.toggle('active', b.dataset.target === 'mapa')
+    );
 
-    if (!mapaListo && !cargandoMapa) {
-      cargarLeaflet();
-    } else if (mapaListo) {
-      // El mapa ya existía: forzar un recálculo de tamaño porque estuvo
-      // oculto (Leaflet necesita esto para no mostrarse cortado).
-      setTimeout(() => map.invalidateSize(), 0);
-    }
+    if (!mapaListo && !cargandoMapa) cargarLeaflet();
+    else if (mapaListo) setTimeout(() => map.invalidateSize(), 0);
   }
 
   function cerrarPantallaMapa() {
     mapScreen.classList.remove('open');
-    document.querySelectorAll('.navitem').forEach(b => b.classList.toggle('active', b.dataset.target === 'home'));
+    document.querySelectorAll('.navitem').forEach(b =>
+      b.classList.toggle('active', b.dataset.target === 'home')
+    );
     detenerDibujo();
     if (poligonoActual) {
       drawnItems.removeLayer(poligonoActual);
@@ -853,12 +1084,12 @@
 
     conTimeout(carga, 10000)
       .then(inicializarMapa)
-      .catch((error) => {
+      .catch(error => {
         cargandoMapa = false;
         mapCanvasWrap.classList.remove('loading');
         mapCanvasWrap.classList.add('error');
         console.error('Fallo al cargar el mapa:', error);
-        mostrarToast('No se pudo cargar el mapa. Revisá la conexión o el bloqueador de contenido (ver consola).');
+        mostrarToast('No se pudo cargar el mapa');
       });
   }
 
@@ -867,9 +1098,9 @@
     cargandoMapa = false;
     mapCanvasWrap.classList.remove('loading');
 
-    map = L.map('mapCanvas', { zoomControl: true }).setView(CENTRO_MAPA_DEFECTO, 15);
+    map = L.map('mapCanvas', { zoomControl: true })
+      .setView(CENTRO_MAPA_DEFECTO, 15);
 
-    // Se mueve a la izquierda para que no tape el botón de dibujar (abajo a la derecha).
     map.attributionControl.setPosition('bottomleft');
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -880,7 +1111,7 @@
     drawnItems = new L.FeatureGroup();
     map.addLayer(drawnItems);
 
-    map.on(L.Draw.Event.CREATED, function (e) {
+    map.on(L.Draw.Event.CREATED, function(e) {
       poligonoActual = e.layer;
       drawnItems.addLayer(poligonoActual);
       detenerDibujo();
@@ -888,7 +1119,7 @@
     });
   }
 
-  mapFab.addEventListener('click', function () {
+  mapFab.addEventListener('click', function() {
     if (!mapaListo) return;
 
     if (dibujando) {
@@ -903,7 +1134,12 @@
 
     dibujando = true;
     dibujoActivo = new L.Draw.Polygon(map, {
-      shapeOptions: { color: '#223629', fillColor: '#33513f', fillOpacity: 0.25, weight: 2 }
+      shapeOptions: {
+        color: '#223629',
+        fillColor: '#33513f',
+        fillOpacity: 0.25,
+        weight: 2
+      }
     });
     dibujoActivo.enable();
     mapFab.classList.add('drawing');
@@ -921,7 +1157,7 @@
 
   function calcularHectareas(poligono) {
     const areaM2 = L.GeometryUtil.geodesicArea(poligono.getLatLngs()[0]);
-    return Math.round((areaM2 / 10000) * 10) / 10; // m² -> ha, 1 decimal
+    return Math.round((areaM2 / 10000) * 10) / 10;
   }
 
   function abrirHojaDeNombre(poligono) {
@@ -946,17 +1182,34 @@
     }
   });
 
-  zoneNameSave.addEventListener('click', () => {
+  zoneNameSave.addEventListener('click', async () => {
     const nombre = zoneNameInput.value.trim();
     if (!nombre || !poligonoActual) return;
 
     const hectareas = zoneNameOverlay.dataset.hectareas;
-    agregarZonaALaLista(nombre, hectareas);
+    const geometry = geometryDesdePoligono(poligonoActual);
 
+    const zona = agregarZonaALaLista(nombre, hectareas);
     zoneNameOverlay.classList.remove('open');
-    poligonoActual = null; // el polígono queda dibujado en el mapa como referencia
+
+    // Cerramos la pantalla del mapa, pero dejamos la consulta trabajando.
+    const poligonoGuardado = poligonoActual;
+    poligonoActual = null;
     cerrarPantallaMapa();
-    mostrarToast('Zona "' + nombre + '" agregada');
+
+    mostrarToast('Consultando Sentinel-2…');
+
+    try {
+      await actualizarZonaConSentinel(zona, geometry);
+      mostrarToast(`Zona "${nombre}" actualizada con Sentinel-2`);
+    } catch (error) {
+      // La zona queda visible con el estado "Sin datos".
+    }
+
+    // Mantener referencia visual no es necesario después de guardar.
+    if (poligonoGuardado && map && drawnItems.hasLayer(poligonoGuardado)) {
+      drawnItems.removeLayer(poligonoGuardado);
+    }
   });
 
   function agregarZonaALaLista(nombre, hectareas) {
@@ -966,36 +1219,56 @@
     zona.className = 'zone';
     zona.tabIndex = 0;
     zona.dataset.zona = nombre;
-    zona.dataset.hect = hectareas + ' ha · sin imágenes satelitales todavía';
+    zona.dataset.hect = hectareas + ' ha · consultando Sentinel-2';
     zona.dataset.indice = '—';
-    zona.dataset.estado = 'Sin datos';
+    zona.dataset.estado = 'Consultando…';
+    zona.dataset.fuente = 'Sentinel-2';
+    zona.dataset.fecha = '';
+    zona.dataset.ndvi = '';
 
     zona.innerHTML =
       '<div class="zone-info">' +
         '<div class="zone-name"></div>' +
-        '<div class="zone-sub">' + hectareas + ' ha</div>' +
+        '<div class="zone-sub">' + hectareas + ' ha · Sentinel-2</div>' +
       '</div>' +
       '<div class="zone-right">' +
-        '<span class="zone-index">—</span>' +
+        '<span class="zone-index">…</span>' +
         '<span class="badge warn"></span>' +
+        '<button class="zone-delete" type="button" aria-label="Eliminar zona">🗑️</button>' +
       '</div>';
+
     zona.querySelector('.zone-name').textContent = nombre;
 
-    zona.addEventListener('click', () => abrirZona(zona));
-    zona.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        abrirZona(zona);
-      }
-    });
+    configurarZona(zona);
 
     zoneList.appendChild(zona);
 
-    const contadorZonas = document.querySelector('.stats .stat:first-child .stat-value');
     if (contadorZonas) {
-      contadorZonas.textContent = String(Number(contadorZonas.textContent || '0') + 1);
+      contadorZonas.textContent = String(
+        document.querySelectorAll('#zoneList .zone').length
+      );
     }
+
+    return zona;
   }
+  // Inicializa el indicador global usando solamente zonas con NDVI real.
+  recalcularIndicadorGlobal();
+
+</script>
+
+
+<script>
+  // Comprobación inicial de conexión con la API.
+  fetch(`${API_BASE_URL}/api/health`)
+    .then(r => r.ok ? r.json() : Promise.reject(new Error('API no disponible')))
+    .then(data => {
+      console.log('PastureRestore API:', data);
+      contadorAlertas.textContent = '0';
+    })
+    .catch(err => {
+      console.warn('API todavía no conectada:', err.message);
+      contadorAlertas.textContent = '—';
+    });
 </script>
 
 </body>
