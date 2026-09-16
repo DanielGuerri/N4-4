@@ -35,32 +35,40 @@
     color:var(--ink);
     display:flex;
     justify-content:center;
+    align-items:center;
     min-height:100vh;
-    padding:24px 0;
+    padding:0;
   }
 
   .phone{
     width:100%;
     max-width:412px;
-    min-height:840px;
+    height:100vh;
+    max-height:840px;
     background:var(--bg);
-    border-radius:32px;
+    border-radius:24px;
     border:1px solid #c7cfba;
-    box-shadow:0 1px 0 rgba(0,0,0,0.04);
+    box-shadow:0 4px 20px rgba(0,0,0,0.08);
     display:flex;
     flex-direction:column;
     overflow:hidden;
     position:relative;
   }
 
+  @media (max-width: 480px) {
+    body { padding: 0; }
+    .phone { border-radius: 0; border: none; height: 100vh; max-height: 100vh; }
+  }
+
   .statusbar{
-    height:28px;
+    height:20px;
     display:flex;
     align-items:center;
     justify-content:center;
-    font-size:12px;
+    font-size:11px;
     color:var(--ink-soft);
     letter-spacing:0.02em;
+    flex-shrink:0;
   }
 
   .statusbar .notch{
@@ -68,116 +76,130 @@
     top:0;
     left:50%;
     transform:translateX(-50%);
-    width:120px;
-    height:22px;
+    width:110px;
+    height:16px;
     background:var(--primary-deep);
-    border-radius:0 0 14px 14px;
+    border-radius:0 0 12px 12px;
   }
 
   header.topbar{
-    padding:8px 24px 16px;
+    padding:4px 18px 8px;
     display:flex;
     align-items:baseline;
     justify-content:space-between;
+    flex-shrink:0;
   }
 
   .wordmark{
     font-family:'Fraunces', serif;
-    font-size:20px;
+    font-size:18px;
     font-weight:600;
     color:var(--primary-deep);
   }
 
   .today{
-    font-size:12px;
+    font-size:11px;
     color:var(--ink-soft);
   }
 
   main{
     flex:1;
-    overflow-y:auto;
-    padding:0 24px 24px;
+    display:flex;
+    flex-direction:column;
+    padding:0 18px 12px;
+    overflow:hidden;
   }
 
   .hero{
-    padding:20px 0 24px;
+    padding:8px 0 10px;
     border-bottom:1px solid var(--line);
+    flex-shrink:0;
   }
 
   .hero-label{
-    font-size:13px;
+    font-size:12px;
     color:var(--ink-soft);
-    margin:0 0 6px;
+    margin:0 0 2px;
   }
 
   .hero-number{
     font-family:'Fraunces', serif;
     font-weight:500;
-    font-size:64px;
+    font-size:44px;
     line-height:1;
     color:var(--primary-deep);
     display:flex;
     align-items:flex-start;
-    gap:4px;
+    gap:2px;
   }
 
   .hero-number span.unit{
-    font-size:28px;
-    margin-top:8px;
+    font-size:20px;
+    margin-top:4px;
   }
 
   .hero-delta{
-    margin-top:10px;
-    font-size:13px;
+    margin-top:4px;
+    font-size:11px;
     color:var(--good);
   }
 
   .stats{
     display:grid;
     grid-template-columns:repeat(3, 1fr);
-    gap:10px;
-    padding:20px 0;
+    gap:8px;
+    padding:10px 0;
     border-bottom:1px solid var(--line);
+    flex-shrink:0;
   }
 
   .stat{
     background:var(--surface);
     border-left:3px solid var(--soil);
     border-radius:4px;
-    padding:10px 12px;
+    padding:6px 8px;
   }
 
   .stat:nth-child(2){border-left-color:var(--primary);}
   .stat:nth-child(3){border-left-color:var(--warn);}
 
   .stat-value{
-    font-size:18px;
+    font-size:15px;
     font-weight:600;
   }
 
   .stat-label{
-    font-size:11px;
+    font-size:10px;
     color:var(--ink-soft);
-    margin-top:2px;
-    line-height:1.3;
+    margin-top:1px;
+    line-height:1.2;
   }
 
   .section-title{
-    font-size:15px;
+    font-size:14px;
     font-weight:600;
-    margin:20px 0 12px;
+    margin:10px 0 8px;
+    flex-shrink:0;
+  }
+
+  .zone-list-container {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 100px;
+    padding-right: 2px;
+    margin-bottom: 8px;
   }
 
   .zone-list{
     display:flex;
     flex-direction:column;
-    gap:8px;
+    gap:6px;
   }
 
   .zone{
     background:var(--surface);
     border-radius:6px;
-    padding:12px 14px;
+    padding:8px 10px;
     display:flex;
     align-items:center;
     justify-content:space-between;
@@ -192,20 +214,20 @@
   }
 
   .zone-info .zone-name{
-    font-size:14px;
+    font-size:13px;
     font-weight:500;
   }
 
   .zone-info .zone-sub{
-    font-size:12px;
+    font-size:11px;
     color:var(--ink-soft);
-    margin-top:2px;
+    margin-top:1px;
   }
 
   .zone-right{
     display:flex;
     align-items:center;
-    gap:10px;
+    gap:8px;
   }
 
   .zone-delete{
@@ -213,9 +235,9 @@
     background:transparent;
     color:var(--ink-soft);
     border-radius:5px;
-    padding:5px 7px;
+    padding:3px 5px;
     font-family:inherit;
-    font-size:11px;
+    font-size:10px;
     cursor:pointer;
   }
 
@@ -230,13 +252,13 @@
   }
 
   .zone-index{
-    font-size:14px;
+    font-size:13px;
     font-weight:600;
   }
 
   .badge{
-    width:9px;
-    height:9px;
+    width:8px;
+    height:8px;
     border-radius:50%;
     flex-shrink:0;
   }
@@ -246,8 +268,8 @@
   .badge.critical{background:var(--critical);}
 
   .cta{
-    margin-top:20px;
-    padding:14px 16px;
+    margin-top:auto;
+    padding:10px 12px;
     border:1px solid var(--primary);
     border-radius:6px;
     display:flex;
@@ -259,42 +281,44 @@
     font-family:inherit;
     color:var(--primary-deep);
     text-align:left;
+    flex-shrink:0;
   }
 
   .cta-text{
-    font-size:14px;
+    font-size:13px;
     font-weight:500;
   }
 
   .cta-sub{
-    font-size:12px;
+    font-size:11px;
     color:var(--ink-soft);
-    margin-top:2px;
+    margin-top:1px;
   }
 
   nav.bottomnav{
     display:flex;
     border-top:1px solid var(--line);
     background:var(--surface);
+    flex-shrink:0;
   }
 
   .navitem{
     flex:1;
     border:none;
     background:none;
-    padding:10px 0 8px;
+    padding:8px 0 6px;
     display:flex;
     flex-direction:column;
     align-items:center;
-    gap:4px;
+    gap:2px;
     cursor:pointer;
     color:var(--ink-soft);
     font-family:inherit;
   }
 
   .navitem svg{
-    width:20px;
-    height:20px;
+    width:18px;
+    height:18px;
     stroke:var(--ink-soft);
     fill:none;
     stroke-width:1.6;
@@ -328,7 +352,7 @@
     background:var(--surface);
     width:100%;
     border-radius:20px 20px 0 0;
-    padding:20px 24px 28px;
+    padding:18px 20px 24px;
     transform:translateY(16px);
     transition:transform 0.2s ease;
   }
@@ -337,27 +361,27 @@
 
   .sheet-title{
     font-family:'Fraunces', serif;
-    font-size:20px;
+    font-size:18px;
     font-weight:500;
-    margin:0 0 4px;
+    margin:0 0 2px;
   }
 
   .sheet-sub{
-    font-size:13px;
+    font-size:12px;
     color:var(--ink-soft);
-    margin:0 0 16px;
+    margin:0 0 12px;
   }
 
   .sheet-row{
     display:flex;
     justify-content:space-between;
-    padding:8px 0;
+    padding:6px 0;
     border-bottom:1px solid var(--line);
-    font-size:13px;
+    font-size:12px;
   }
 
   .sheet-close{
-    margin-top:16px;
+    margin-top:14px;
     width:100%;
     padding:10px;
     background:var(--primary);
@@ -365,20 +389,20 @@
     border:none;
     border-radius:6px;
     font-family:inherit;
-    font-size:14px;
+    font-size:13px;
     cursor:pointer;
   }
 
   .toast{
     position:absolute;
-    bottom:78px;
+    bottom:68px;
     left:50%;
     transform:translateX(-50%) translateY(8px);
     background:var(--primary-deep);
     color:#fff;
-    padding:8px 16px;
+    padding:6px 14px;
     border-radius:20px;
-    font-size:12px;
+    font-size:11px;
     opacity:0;
     transition:opacity 0.2s ease, transform 0.2s ease;
     pointer-events:none;
@@ -560,7 +584,6 @@
     cursor:not-allowed;
   }
 
-
   .satellite-status{
     margin-top:8px;
     font-size:11px;
@@ -608,52 +631,54 @@
     </section>
 
     <h2 class="section-title">Zonas monitoreadas</h2>
-    <div class="zone-list" id="zoneList">
-      <div class="zone" tabindex="0" data-zona="Sector Norte" data-hect="18 ha · Últ. imagen hace 3 días" data-indice="71%" data-estado="En recuperación" data-fuente="Demo" data-fecha="—" data-ndvi="">
-        <div class="zone-info">
-          <div class="zone-name">Sector Norte</div>
-          <div class="zone-sub">18 ha</div>
+    <div class="zone-list-container">
+      <div class="zone-list" id="zoneList">
+        <div class="zone" tabindex="0" data-zona="Sector Norte" data-hect="18 ha · Últ. imagen hace 3 días" data-indice="71%" data-estado="En recuperación" data-fuente="Demo" data-fecha="—" data-ndvi="">
+          <div class="zone-info">
+            <div class="zone-name">Sector Norte</div>
+            <div class="zone-sub">18 ha</div>
+          </div>
+          <div class="zone-right">
+            <span class="zone-index">71%</span>
+            <span class="badge good"></span>
+            <button class="zone-delete" type="button" aria-label="Eliminar zona">🗑️</button>
+          </div>
         </div>
-        <div class="zone-right">
-          <span class="zone-index">71%</span>
-          <span class="badge good"></span>
-          <button class="zone-delete" type="button" aria-label="Eliminar zona">🗑️</button>
-        </div>
-      </div>
 
-      <div class="zone" tabindex="0" data-zona="Sector Bajo" data-hect="24 ha · Últ. imagen hace 3 días" data-indice="58%" data-estado="Estable" data-fuente="Demo" data-fecha="—" data-ndvi="">
-        <div class="zone-info">
-          <div class="zone-name">Sector Bajo</div>
-          <div class="zone-sub">24 ha</div>
+        <div class="zone" tabindex="0" data-zona="Sector Bajo" data-hect="24 ha · Últ. imagen hace 3 días" data-indice="58%" data-estado="Estable" data-fuente="Demo" data-fecha="—" data-ndvi="">
+          <div class="zone-info">
+            <div class="zone-name">Sector Bajo</div>
+            <div class="zone-sub">24 ha</div>
+          </div>
+          <div class="zone-right">
+            <span class="zone-index">58%</span>
+            <span class="badge warn"></span>
+            <button class="zone-delete" type="button" aria-label="Eliminar zona">🗑️</button>
+          </div>
         </div>
-        <div class="zone-right">
-          <span class="zone-index">58%</span>
-          <span class="badge warn"></span>
-          <button class="zone-delete" type="button" aria-label="Eliminar zona">🗑️</button>
-        </div>
-      </div>
 
-      <div class="zone" tabindex="0" data-zona="Loma del Molino" data-hect="12 ha · Últ. imagen hace 5 días" data-indice="39%" data-estado="Requiere atención" data-fuente="Demo" data-fecha="—" data-ndvi="">
-        <div class="zone-info">
-          <div class="zone-name">Loma del Molino</div>
-          <div class="zone-sub">12 ha</div>
+        <div class="zone" tabindex="0" data-zona="Loma del Molino" data-hect="12 ha · Últ. imagen hace 5 días" data-indice="39%" data-estado="Requiere atención" data-fuente="Demo" data-fecha="—" data-ndvi="">
+          <div class="zone-info">
+            <div class="zone-name">Loma del Molino</div>
+            <div class="zone-sub">12 ha</div>
+          </div>
+          <div class="zone-right">
+            <span class="zone-index">39%</span>
+            <span class="badge critical"></span>
+            <button class="zone-delete" type="button" aria-label="Eliminar zona">🗑️</button>
+          </div>
         </div>
-        <div class="zone-right">
-          <span class="zone-index">39%</span>
-          <span class="badge critical"></span>
-          <button class="zone-delete" type="button" aria-label="Eliminar zona">🗑️</button>
-        </div>
-      </div>
 
-      <div class="zone" tabindex="0" data-zona="Sector Este" data-hect="30 ha · Últ. imagen hace 2 días" data-indice="76%" data-estado="En recuperación" data-fuente="Demo" data-fecha="—" data-ndvi="">
-        <div class="zone-info">
-          <div class="zone-name">Sector Este</div>
-          <div class="zone-sub">30 ha</div>
-        </div>
-        <div class="zone-right">
-          <span class="zone-index">76%</span>
-          <span class="badge good"></span>
-          <button class="zone-delete" type="button" aria-label="Eliminar zona">🗑️</button>
+        <div class="zone" tabindex="0" data-zona="Sector Este" data-hect="30 ha · Últ. imagen hace 2 días" data-indice="76%" data-estado="En recuperación" data-fuente="Demo" data-fecha="—" data-ndvi="">
+          <div class="zone-info">
+            <div class="zone-name">Sector Este</div>
+            <div class="zone-sub">30 ha</div>
+          </div>
+          <div class="zone-right">
+            <span class="zone-index">76%</span>
+            <span class="badge good"></span>
+            <button class="zone-delete" type="button" aria-label="Eliminar zona">🗑️</button>
+          </div>
         </div>
       </div>
     </div>
@@ -741,8 +766,6 @@
   // ============================================================
   // PastureRestore V2 - configuración de API
   // ============================================================
-  // En desarrollo local: http://127.0.0.1:8000
-  // En producción: colocar aquí la URL pública de Render.
   const API_BASE_URL = 'https://pasturerestore-api.onrender.com';
 </script>
 
@@ -896,7 +919,6 @@
       const datos = await consultarNDVI(geometry);
       actualizarDetalleDesdeDatos(zonaEl, datos);
 
-      // El indicador principal representa el promedio de todas las zonas con NDVI válido.
       recalcularIndicadorGlobal();
 
       return datos;
@@ -914,7 +936,6 @@
     const latLngs = poligono.getLatLngs()[0];
     const coordinates = latLngs.map(p => [p.lng, p.lat]);
 
-    // GeoJSON exige cerrar el anillo repitiendo el primer punto.
     if (coordinates.length && (
       coordinates[0][0] !== coordinates[coordinates.length - 1][0] ||
       coordinates[0][1] !== coordinates[coordinates.length - 1][1]
@@ -1192,7 +1213,6 @@
     const zona = agregarZonaALaLista(nombre, hectareas);
     zoneNameOverlay.classList.remove('open');
 
-    // Cerramos la pantalla del mapa, pero dejamos la consulta trabajando.
     const poligonoGuardado = poligonoActual;
     poligonoActual = null;
     cerrarPantallaMapa();
@@ -1203,10 +1223,8 @@
       await actualizarZonaConSentinel(zona, geometry);
       mostrarToast(`Zona "${nombre}" actualizada con Sentinel-2`);
     } catch (error) {
-      // La zona queda visible con el estado "Sin datos".
     }
 
-    // Mantener referencia visual no es necesario después de guardar.
     if (poligonoGuardado && map && drawnItems.hasLayer(poligonoGuardado)) {
       drawnItems.removeLayer(poligonoGuardado);
     }
@@ -1251,14 +1269,11 @@
 
     return zona;
   }
-  // Inicializa el indicador global usando solamente zonas con NDVI real.
-  recalcularIndicadorGlobal();
 
+  recalcularIndicadorGlobal();
 </script>
 
-
 <script>
-  // Comprobación inicial de conexión con la API.
   fetch(`${API_BASE_URL}/api/health`)
     .then(r => r.ok ? r.json() : Promise.reject(new Error('API no disponible')))
     .then(data => {
