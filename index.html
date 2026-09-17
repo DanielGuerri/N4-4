@@ -766,7 +766,9 @@
   // ============================================================
   // PastureRestore V2 - configuración de API
   // ============================================================
-  const API_BASE_URL = 'https://pasturerestore-api.onrender.com';
+  // Detecta automáticamente si está corriendo en entorno local o en producción
+  const isLocalHost = ['localhost', '127.0.0.1', ''].includes(window.location.hostname);
+  const API_BASE_URL = isLocalHost ? 'http://127.0.0.1:8000' : 'https://pasturerestore-api.onrender.com';
 </script>
 
 <script>
@@ -883,8 +885,9 @@
       badge.className = `badge ${clasificacion.clase}`;
     }
     if (sub && datos.date) {
-      const hect = zonaEl.dataset.hect.split(' · ')[0];
-      sub.textContent = `${hect}`;
+      const hect = (zonaEl.dataset.hect || '').split(' · ')[0];
+      const fuenteCorta = (datos.source && datos.source.includes('NASA')) ? 'NASA HLS' : 'Sentinel-2';
+      sub.textContent = `${hect} · ${fuenteCorta} (${formatearFecha(datos.date)})`;
     }
   }
 
@@ -1217,11 +1220,12 @@
     poligonoActual = null;
     cerrarPantallaMapa();
 
-    mostrarToast('Consultando Sentinel-2…');
+    mostrarToast('Consultando satélite…');
 
     try {
-      await actualizarZonaConSentinel(zona, geometry);
-      mostrarToast(`Zona "${nombre}" actualizada con Sentinel-2`);
+      const datos = await actualizarZonaConSentinel(zona, geometry);
+      const sateliteNombre = (datos && datos.source && datos.source.includes('NASA')) ? 'NASA HLS (Respaldo)' : 'Sentinel-2';
+      mostrarToast(`Zona "${nombre}" calculada vía ${sateliteNombre}`);
     } catch (error) {
     }
 

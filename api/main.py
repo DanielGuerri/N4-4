@@ -4,9 +4,11 @@ from typing import Any
 
 import requests
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
+from nasa_hls import procesar_ndvi_nasa
 
 load_dotenv()
 
@@ -15,6 +17,7 @@ STATS_URL = "https://sh.dataspace.copernicus.eu/statistics/v1"
 
 CLIENT_ID = os.getenv("COPERNICUS_CLIENT_ID")
 CLIENT_SECRET = os.getenv("COPERNICUS_CLIENT_SECRET")
+NASA_TOKEN = os.getenv("NASA_EARTHDATA_TOKEN")
 
 # En producción se puede restringir a la URL de GitHub Pages.
 # Para el mini proyecto dejamos "*" para facilitar las primeras pruebas.
@@ -43,6 +46,19 @@ class GeometryRequest(BaseModel):
 
 @app.get("/")
 def root():
+    index_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "index.html"))
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    return {
+        "project": "PastureRestore",
+        "api": "2.0.0",
+        "status": "online",
+        "service": "Sentinel-2 NDVI"
+    }
+
+
+@app.get("/api/info")
+def api_info():
     return {
         "project": "PastureRestore",
         "api": "2.0.0",
@@ -53,9 +69,13 @@ def root():
 
 @app.get("/api/health")
 def health():
+    copernicus_ok = bool(CLIENT_ID and CLIENT_SECRET and "pegar_aqui" not in CLIENT_ID)
+    nasa_ok = bool(NASA_TOKEN and "pegar_aqui" not in NASA_TOKEN)
     return {
         "status": "ok",
-        "copernicus_configured": bool(CLIENT_ID and CLIENT_SECRET)
+        "copernicus_configured": copernicus_ok,
+        "nasa_configured": nasa_ok,
+        "active_backup": "NASA HLS (Harmonized Landsat Sentinel-2)" if nasa_ok else None
     }
 
 
@@ -204,34 +224,77 @@ def ndvi(request: GeometryRequest):
             detail="El polígono no tiene suficientes vértices."
         )
 
-    now = datetime.now(timezone.utc).date()
-    start = now - timedelta(days=request.days)
+    copernicus_error = None
+    copernicus_configured = bool(CLIENT_ID and CLIENT_SECRET and "pegar_aqui" not in CLIENT_ID)
 
-    token = get_access_token()
+    # 1. Intento con Satélite Primario: Copernicus Sentinel-2
+    if copernicus_configured:
+        try:
+            now = datetime.now(timezone.utc).date()
+            start = now - timedelta(days=request.days)
+            token = get_access_token()
 
-    body = build_stats_request(
-        request.geometry,
-        start.isoformat(),
-        now.isoformat(),
-        request.max_cloud_coverage
+            body = build_stats_request(
+                request.geometry,
+                start.isoformat(),
+                now.isoformat(),
+                request.max_cloud_coverage
+            )
+
+            response = requests.post(
+                STATS_URL,
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                },
+                json=body,
+                timeout=35,
+            )
+
+            if response.ok:
+                return extract_latest_valid_result(response.json())
+            else:
+                copernicus_error = f"Copernicus HTTP {response.status_code}"
+        except Exception as e:
+            copernicus_error = str(e)
+    else:
+        copernicus_error = "Copernicus no configurado o credenciales de prueba pendientes."
+
+    # 2. Conmutación automática a Satélite de Respaldo: NASA HLS
+    nasa_configured = bool(NASA_TOKEN and "pegar_aqui" not in NASA_TOKEN)
+    if nasa_configured:
+        try:
+            return procesar_ndvi_nasa(
+                request.geometry,
+                days=request.days,
+                max_cloud_coverage=request.max_cloud_coverage
+            )
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(
+                status_code=502,
+                detail=f"Fallo en Copernicus ({copernicus_error}) y en NASA HLS: {str(e)}"
+            )
+
+    raise HTTPException(
+        status_code=502,
+        detail=f"Fallo en satélite primario ({copernicus_error}) y satélite de respaldo NASA no configurado."
     )
 
-    response = requests.post(
-        STATS_URL,
-        headers={
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-        },
-        json=body,
-        timeout=90,
-    )
 
-    if not response.ok:
-        detail = response.text[:1000]
+@app.post("/api/ndvi/nasa")
+def ndvi_nasa(request: GeometryRequest):
+    """Endpoint directo para consultar específicamente el satélite de la NASA."""
+    if request.geometry.get("type") != "Polygon":
         raise HTTPException(
-            status_code=502,
-            detail=f"Error de Sentinel Hub Statistical API: HTTP {response.status_code}. {detail}"
+            status_code=400,
+            detail="La geometría debe ser un GeoJSON Polygon."
         )
+    return procesar_ndvi_nasa(
+        request.geometry,
+        days=request.days,
+        max_cloud_coverage=request.max_cloud_coverage
+    )
 
-    return extract_latest_valid_result(response.json())
